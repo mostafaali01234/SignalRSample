@@ -43,6 +43,11 @@ public class HomeController : Controller
         return Accepted();
     }
 
+    public IActionResult Notification()
+    {
+        return View();
+    }
+
     public IActionResult Privacy()
     {
         return View();

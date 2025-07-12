@@ -1,0 +1,32 @@
+﻿<div class="container">
+    <div class="row border p-1 mb-4">
+        <h3>Send Notification to All Members:</h3>
+        <hr />
+
+        <div class="row mb-4">
+            <div class="col-8">
+                <input type="text" class="form-control" id="msgInput"/>
+            </div>
+            <div class="col-4">
+                <button class="btn btn-primary form-control" id="btn_send_msg">Send Message</button>
+            </div>
+        </div>
+        <div class="row mb-4">
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-bell"></i> <span id="NotificationCounter">(0)</span>
+                </button>
+                <ul class="dropdown-menu" id="NotificationList">
+                  @*   <li><a class="dropdown-item" href="#">Action</a></li>
+                    <li><a class="dropdown-item" href="#">Another action</a></li>
+                    <li><a class="dropdown-item" href="#">Something else here</a></li> *@
+                </ul>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+<script src="~/js/signalr.js"></script>
+<script src="~/js/notificationMessages.js"></script>
