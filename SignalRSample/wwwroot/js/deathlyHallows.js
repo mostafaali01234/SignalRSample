@@ -20,6 +20,11 @@ connectionDeathlyHallows.on("updateDeathlyHallowCount", (cloak,stone,wand) => {
 
 //start connection
 function fulfilled() {
+    connectionDeathlyHallows.invoke("getRaceStatus").then((raceCounter) => {
+        cloakSpan.innerText = raceCounter.cloak;
+        stoneSpan.innerText = raceCounter.stone;
+        wandSpan.innerText = raceCounter.wand;
+    });
     console.log("Connection to DeathlyHallows hub established.");
 }
 function rejected() {
