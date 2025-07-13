@@ -73,7 +73,6 @@ namespace SignalRSample.Hubs
             await Clients.All.SendAsync("ReceivePublicMessage", roomId, userId, userName, message, roomName);
         }
 
-        
         public async Task SendPrivateMessage(string receiverId, string message, string receiverName)
         {
             var userId = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -82,19 +81,17 @@ namespace SignalRSample.Hubs
             await Clients.Users(receiverId, userId).SendAsync("ReceivePrivateMessage", receiverId, userId, userName, message, receiverName);
         }
 
+        public async Task SendOpenPrivateCgat(string receiverId)
+        {
+            var userId = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userName = _db.Users.FirstOrDefault(u => u.Id == userId).UserName;
 
-        //public async Task SendMessageToAll(string user, string message)
-        //{
-        //    await Clients.All.SendAsync("MessageReceived", user, message);
-        //}
-        //[Authorize]
-        //public async Task SendMessageToReceiver(string sender, string reveiver, string message)
-        //{
-        //    var userId = _db.Users.FirstOrDefault(z => z.Email.ToLower() == reveiver.ToLower()).Id;
-        //    if(!string.IsNullOrEmpty(userId))
-        //    {
-        //        await Clients.User(userId).SendAsync("MessageReceived", sender, message);
-        //    }
-        //}
+            await Clients.User(receiverId).SendAsync("ReceiveOpenPrivateChat", userId, userName);
+        }
+        
+        public async Task SendDeletePrivateCgat(string chatId)
+        {
+            await Clients.All.SendAsync("ReceiveDeletePrivateChat", chatId);
+        }
     }
 }
