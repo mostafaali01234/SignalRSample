@@ -4,10 +4,10 @@ using SignalRSample.Data;
 
 namespace SignalRSample.Hubs
 {
-    public class ChatHub : Hub
+    public class BasicChatHub : Hub
     {
         private readonly ApplicationDbContext _db;
-        public ChatHub(ApplicationDbContext db)
+        public BasicChatHub(ApplicationDbContext db)
         {
             _db = db;
         }

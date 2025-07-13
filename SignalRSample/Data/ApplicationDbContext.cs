@@ -12,4 +12,5 @@ public class ApplicationDbContext : IdentityDbContext
     }
 
     public DbSet<Order> Order { get; set; }
+    public DbSet<ChatRoom> ChatRoom { get; set; }
 }
