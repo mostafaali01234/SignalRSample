@@ -1,11 +1,15 @@
-﻿<div class="container border m-3 p-4">
+﻿@model SignalRSample.Models.ViewModels.ChatVm
+
+<input type="hidden" value="@Model.UserId" id="hdUserId" />
+
+<div class="container border m-3 p-4">
     <div class="row">
         <div class="col-3">Create Room</div>
         <div class="col-4">
             <input type="text" class="form-control" id="createRoomName" />
         </div>
         <div class="col-3">
-            <input type="button" class="btn btn-primary" onclick="" id="btnCreateRoom" value="Create Room" />
+            <input type="button" class="btn btn-primary" onclick="@($"addnewRoom({Model.MaxRoomAllowed})")" id="btnCreateRoom" value="Create Room" />
         </div>
     </div>
 
@@ -17,7 +21,7 @@
             </select>
         </div>
         <div class="col-3">
-            <input type="button" class="btn btn-danger" onclick="" value="Delete Room" />
+            <input type="button" class="btn btn-danger" onclick="@($"delRoom()")" value="Delete Room" />
         </div>
     </div>
 </div>
@@ -37,7 +41,7 @@
             <input type="text" class="form-control" id="txtPublicMessage" />
         </div>
         <div class="col-3">
-            <input type="button" class="btn btn-info" onclick="" value="Public Message" />
+            <input type="button" class="btn btn-info" onclick="sendPublicMessage()" value="Public Message" />
         </div>
     </div>
 </div>
@@ -57,7 +61,7 @@
             <input type="text" class="form-control" id="txtPrivateMessage" />
         </div>
         <div class="col-3">
-            <input type="button" class="btn btn-secondary" onclick="" id="sendButton" value="Private Message" />
+            <input type="button" class="btn btn-secondary" onclick="sendPrivateMessage()" id="sendButton" value="Private Message" />
         </div>
     </div>
 </div>

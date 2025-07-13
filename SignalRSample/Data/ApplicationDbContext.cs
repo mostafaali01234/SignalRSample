@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using SignalRSample.Models;
+using SignalRSample.Models.ViewModels;
 
 namespace SignalRSample.Data;
 

@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SignalRSample.Data;
 using SignalRSample.Models;
+using SignalRSample.Models.ViewModels;
 
 namespace SignalRSample.Controllers
 {
@@ -73,7 +74,9 @@ namespace SignalRSample.Controllers
             _context.ChatRoom.Remove(chatRoom);
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            var room = await _context.ChatRoom.FirstOrDefaultAsync();
+
+            return Ok(new { deleted = id, selected = (room == null ? 0 : room.Id)});
         }
 
        
