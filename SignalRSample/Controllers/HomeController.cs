@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using SignalRSample.Data;
 using SignalRSample.Hubs;
 using SignalRSample.Models;
 
@@ -8,13 +9,17 @@ namespace SignalRSample.Controllers;
 
 public class HomeController : Controller
 {
+    private readonly ApplicationDbContext _db;
     private readonly ILogger<HomeController> _logger;
     private readonly IHubContext<DeathlyHallowsHub> _dhHub;
+    private readonly IHubContext<OrderHub> _orderHub;
 
-    public HomeController(ILogger<HomeController> logger, IHubContext<DeathlyHallowsHub> dhHub)
+    public HomeController(ILogger<HomeController> logger, IHubContext<DeathlyHallowsHub> dhHub, ApplicationDbContext db, IHubContext<OrderHub> orderHub)
     {
         _logger = logger;
         _dhHub = dhHub;
+        _db = db;
+        _orderHub = orderHub;
     }
 
     public IActionResult Index()
@@ -61,6 +66,46 @@ public class HomeController : Controller
     public IActionResult BasicChat()
     {
         return View();
+    }
+
+    public async Task<IActionResult> Order()
+    {
+        string[] name = { "Ahmed", "Mohammed", "Mostafa", "Ali", "Mahmoud" };
+        string[] itemName = { "Food1", "Food2", "Food3", "Food4", "Food5" };
+
+        Random rand = new Random();
+        int index = rand.Next(name.Length);
+
+        Order order = new Order
+        {
+            Name = name[index],
+            ItemName = itemName[index],
+            Count = index
+        };
+
+        return View(order);
+    }
+
+    [ActionName("Order")]
+    [HttpPost]
+    public async Task<IActionResult> OrderPost(Order order)
+    {
+        _db.Order.Add(order);
+        _db.SaveChanges();
+        await _orderHub.Clients.All.SendAsync("newOrder");
+        return RedirectToAction(nameof(Order));
+    }
+
+    [ActionName("OrderList")]
+    public async Task<IActionResult> OrderList()
+    {
+        return View();
+    }
+    [HttpGet]
+    public async Task<IActionResult> GetAllOrder()
+    {
+        var orders = _db.Order.ToList();
+        return Json(new { data = orders });
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
