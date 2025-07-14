@@ -78,6 +78,7 @@ public class HomeController : Controller
 
         return View(chatVm);
     }
+
     public IActionResult AdvancedChat()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -87,6 +88,8 @@ public class HomeController : Controller
             MaxRoomAllowed = 4,
             UserId = userId
         };
+
+
 
         return View(chatVm);
     }
