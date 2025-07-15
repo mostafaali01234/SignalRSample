@@ -73,7 +73,14 @@ public class HomeController : Controller
         {
             Rooms = _db.ChatRoom.ToList(),
             MaxRoomAllowed = 4,
-            UserId = userId
+            UserId = userId,
+            Users = _db.Users
+                .Where(u => u.Id != userId)
+                .Select(u => new UserVm
+                {
+                    Id = u.Id,
+                    UserName = u.UserName,
+                }).ToList()
         };
 
         return View(chatVm);
@@ -86,7 +93,14 @@ public class HomeController : Controller
         {
             Rooms = _db.ChatRoom.ToList(),
             MaxRoomAllowed = 4,
-            UserId = userId
+            UserId = userId,
+            Users = _db.Users
+                .Where(u => u.Id != userId)
+                .Select(u => new UserVm
+                {
+                    Id = u.Id,
+                    UserName = u.UserName,
+                }).ToList()
         };
 
         

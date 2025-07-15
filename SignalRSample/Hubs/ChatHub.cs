@@ -25,7 +25,6 @@ namespace SignalRSample.Hubs
             }
             return base.OnConnectedAsync();
         }
-        
         public override Task OnDisconnectedAsync(Exception? exception)
         {
             var userId = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -50,6 +49,7 @@ namespace SignalRSample.Hubs
             return base.OnDisconnectedAsync(exception);
         }
 
+
         public async Task SendAddRoomMessage(int maxRoom, int roomId, string roomName)
         {
             var userId = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -57,7 +57,6 @@ namespace SignalRSample.Hubs
 
             await Clients.All.SendAsync("ReceiveAddRoomMessage", maxRoom, roomId, roomName, userId, userName);
         }
-
         public async Task SendDelRoomMessage(int deleted, int selected, string roomName)
         {
             var userId = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -66,6 +65,7 @@ namespace SignalRSample.Hubs
             await Clients.All.SendAsync("ReceiveDelRoomMessage", deleted, selected, roomName, userName);
         }
         
+
         public async Task SendPublicMessage(int roomId, string message, string roomName)
         {
             var userId = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -104,14 +104,63 @@ namespace SignalRSample.Hubs
             await Clients.All.SendAsync("populateRoomMessages", roomId, userId, messagesList);
         }
 
+
+
         public async Task SendPrivateMessage(string receiverId, string message, string receiverName)
         {
-            var userId = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
-            var userName = _db.Users.FirstOrDefault(u => u.Id == userId).UserName;
+            var senderId = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            var senderName = _db.Users.FirstOrDefault(u => u.Id == senderId).UserName;
 
-            await Clients.Users(receiverId, userId).SendAsync("ReceivePrivateMessage", receiverId, userId, userName, message, receiverName);
+            var newMessage = new Models.PrivateChatMessages
+            {
+                SenderId = senderId,
+                ReceiverId = receiverId,
+                Message = message,
+                Seen = false,
+                Time = DateTime.Now
+            };
+            _db.PrivateChatMessages.Add(newMessage);
+            _db.SaveChanges();
+
+            //await Clients.Users(receiverId, senderId).SendAsync("ReceivePrivateMessage", receiverId, senderId, senderName, newMessage, receiverName);
+
+            await populatePrivateChat(senderId, receiverId);
+        }
+        public async Task populatePrivateChat(string senderId, string receiverId)
+        {
+            var messagesList = _db.PrivateChatMessages
+                 .Where(z => (z.SenderId == senderId && z.ReceiverId == receiverId) || (z.SenderId == receiverId && z.ReceiverId == senderId))
+                 .OrderBy(z => z.Time)
+                 .Select(z => new PrivateMessageVm
+                 {
+                     Message = z.Message,
+                     SenderId = z.SenderId,
+                     SenderName = z.Sender.UserName,
+                     ReceiverId = z.ReceiverId,
+                     ReceiverName = z.Receiver.UserName,
+                     Time = z.Time,
+                     Seen = z.Seen
+                 })
+                 .ToList();
+
+            await Clients.All.SendAsync("populatePrivateChat", senderId, receiverId, messagesList);
         }
 
+
+        //public async Task SendSeenPrivateMessage(string senderId, string receiverId, DateTime time)
+        //{
+        //    var userId = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+        //    var userName = _db.Users.FirstOrDefault(u => u.Id == userId).UserName;
+        //    var messages = _db.PrivateChatMessages
+        //        .Where(z => z.SenderId == senderId && z.ReceiverId == receiverId && z.Time <= time && !z.Seen)
+        //        .ToList();
+        //    foreach (var message in messages)
+        //    {
+        //        message.Seen = true;
+        //    }
+        //    _db.SaveChanges();
+        //    await Clients.Users(senderId, receiverId).SendAsync("ReceiveSeenPrivateMessage", senderId, receiverId, userName, messages);
+        //}
         public async Task SendOpenPrivateChat(string receiverId)
         {
             var userId = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -119,7 +168,6 @@ namespace SignalRSample.Hubs
 
             await Clients.User(receiverId).SendAsync("ReceiveOpenPrivateChat", userId, userName);
         }
-        
         public async Task SendDeletePrivateChat(string chatId)
         {
             await Clients.All.SendAsync("ReceiveDeletePrivateChat", chatId);

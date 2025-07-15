@@ -34,13 +34,18 @@ connection.on("ReceivePublicMessage", function (roomId, userId, username, messag
     receivepublicMessage(roomId, userId, username, message);
 })
 
-connection.on("ReceivePrivateMessage", function (senderId, senderName, receiveId, message, chatId) {
-    receiveprivateMessage(senderId, senderName, receiveId, message, chatId);
+connection.on("ReceivePrivateMessage", function (receiverId, senderId, senderName, newMessage, receiverName) {
+    receiveprivateMessage(receiverId, senderId, senderName, newMessage, receiverName);
 })
 
 
 connection.on("populateRoomMessages", function (roomId, userId, messagesList) {
     populateRoomMessages(roomId, userId, messagesList);
+})
+
+
+connection.on("populatePrivateChat", function (senderId, receiverId, messagesList) {
+    populatePrivateChat(senderId, receiverId, messagesList);
 })
 
 
@@ -99,6 +104,13 @@ function deleteRoom(roomId, roomName) {
 
 //-------------------------------------------
 
+function setchatuserId(receiverId) {
+    console.log(receiverId)
+    connection.invoke("populatePrivateChat", senderId, receiverId);
+}
+
+//-------------------------------------------
+
 function LoadRoomMessages(roomId) {
     
     connection.invoke("populateRoomMessages", roomId);
@@ -106,6 +118,13 @@ function LoadRoomMessages(roomId) {
 
 //-------------------------------------------
 
+function readyprivateMessage() {
+    if (document.getElementById("inputMessagePrivate").value === "") {
+        document.getElementById('btnMessagePrivate').disabled = true;
+    } else {
+        document.getElementById('btnMessagePrivate').disabled = false;
+    }
+}
 function readypublicMessage(roomId) {
     if (document.getElementById("inputMessage" + roomId).value === "") {
         document.getElementById('btnMessage' + roomId).disabled = true;
@@ -143,16 +162,23 @@ function PopulateMessages() {
 
 //-------------------------------------------
 
-function sendPrivateMessage() {
-    let messageBox = document.getElementById("txtPrivateMessage");
-    let message = messageBox.value;
-    let ddlSelUser = document.getElementById("ddlSelUser");
-    let receiverName = ddlSelUser.options[ddlSelUser.selectedIndex].text;
-    let receiverId = ddlSelUser.value;
-    console.log(receiverName);
+function sendprivateMessage() {
+    let sendButton = document.getElementById(`btnMessagePrivate`);
+    let inputMsg = document.getElementById(`inputMessagePrivate`);
 
+    var privateActiveTap = document.querySelector('a.active[id^="list+"][id$="+list"]');
+    var rid = privateActiveTap.id.split("+");
+    var receiverId = (rid[1]);
 
-    connection.send("SendPrivateMessage", (receiverId), message, receiverName);
+    var message = inputMsg.value;
+    connection.invoke("SendPrivateMessage", receiverId, message, senderId).catch(function (err) {
+        inputMsg.value = message;
+        sendButton.disabled = false;
+        return console.error(err.toString());
+    });
+
+    inputMsg.value = '';
+    sendButton.disabled = true;
 }
 
 
