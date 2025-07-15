@@ -4,7 +4,7 @@
     {
         <li class="nav-item w-25" role="presentation">
             <a class="nav-link text-center @( Model.Rooms.First().Id == item.Id ? "active" : "")" id="room@(item.Id)-tab" data-bs-toggle="tab"
-               href="#room@(item.Id)" role="tab" aria-controls="room@(item.Id)" aria-selected="true">
+               href="#room@(item.Id)" role="tab" aria-controls="room@(item.Id)" aria-selected="true" onclick="LoadRoomMessages(@item.Id)">
                 @item.Name <i class="bi bi-trash text-danger deleteRoom" onclick="deleteRoom(@item.Id,'@item.Name')"></i>
             </a>
         </li>

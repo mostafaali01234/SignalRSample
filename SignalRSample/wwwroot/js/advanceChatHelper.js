@@ -1,19 +1,31 @@
 ﻿function receivepublicMessage(roomId, userId, username, message) {
-    console.log(123);
+    
     let ulmessagesList = document.getElementById(`ulmessagesList${roomId}`);
     let li = document.createElement("li");
-    let newmsg = document.createElement("p");
+    let row = document.createElement("div");
+    row.className = "row";
+    row.style.margin = 0;
+    row.style.padding = 0;
 
+
+    let newmsg = document.createElement("p");
+    newmsg.style.marginBottom = 0;
     if (userId == document.getElementById("hdUserId").value || document.getElementById("hdUserId").value == '') {
-        newmsg.innerHTML = `${username}: ${message}`;
+        newmsg.innerHTML = `${username}: ${message.message}`;
     }
     else {
-        newmsg.innerHTML = `<i role="button" class="bi bi-arrow-right-circle text-primary" onclick="openprivateChat('${userId}','${username}')"> </i> ${username}: ${message}`;
+        newmsg.innerHTML = `<i role="button" class="bi bi-arrow-right-circle text-primary" onclick="openprivateChat('${userId}','${username}')"> </i> ${username}: ${message.message}`;
     }
 
+    let time = document.createElement("p");
+    time.style.fontSize = "0.8rem";
+    time.style.color = "grey";
+    time.innerText = new Date(message.time).toISOString().slice(0, 19).replace(/-/g, "/").replace("T", " ");
 
 
-    li.appendChild(newmsg);
+    row.appendChild(newmsg);
+    row.appendChild(time);
+    li.appendChild(row);
     ulmessagesList.appendChild(li);
 
     li.scrollIntoView(false);
@@ -24,26 +36,28 @@
 //-------------------------------------------
 
 function populateChatRooms(opType) {
+    let selectedRoomId = 0;
     $.getJSON("/ChatRooms/GetChatRoom", function (data) {
         let ddlSelRoom = document.getElementById("ulroomTabs");
         let divRooms = document.getElementById("divRooms");
         ulroomTabs.innerHTML = null;
         divRooms.innerHTML = null;
 
-        console.log(data[0].id);
+        selectedRoomId = (data[0].id);
+        //selectedRoomId = (opType == "Add" ? data[data.length - 1].id : data[0].id);
 
         data.forEach(item => {
             ddlSelRoom.innerHTML += `
             <li class="nav-item w-25" role="presentation">
-                <a class="nav-link text-center ${data[0].id == item.id ? "active" : ""}" id="room${item.id}-tab" data-bs-toggle="tab"
-                        href="#room${item.id}" role="tab" aria-controls="room${item.id}" aria-selected="true">
+                <a class="nav-link text-center ${selectedRoomId == item.id ? "active" : ""}" id="room${item.id}-tab" data-bs-toggle="tab"
+                        href="#room${item.id}" role="tab" aria-controls="room${item.id}" aria-selected="true" onclick="LoadRoomMessages(${item.id})">
                    ${item.name} <i class="bi bi-trash text-danger deleteRoom" onclick="deleteRoom(${item.id},'${item.name}')"></i>
                 </a>
             </li>
             `;
 
             divRooms.innerHTML += `
-            <div class="tab-pane h-100 fade ${data[0].id == item.id ? "show active" : ""}" id="room${item.id}" role="tabpanel" aria-labelledby="room${item.id}-tab">
+            <div class="tab-pane h-100 fade ${selectedRoomId == item.id ? "show active" : ""}" id="room${item.id}" role="tabpanel" aria-labelledby="room${item.id}-tab">
                 <div class="container  h-100" >
                     <div class="row h-100 flex-column p-3">
 
@@ -85,10 +99,53 @@ function populateChatRooms(opType) {
                 </a>
             </li>
             `;
-
-
-
+    }).then(() => {
+        //console.log(selectedRoomId)
+        LoadRoomMessages(selectedRoomId);
     });
+
+
+    
+}
+
+
+//-------------------------------------------
+
+function populateRoomMessages(roomId, userId, messagesList) {
+    
+    let ulmessagesList = document.getElementById(`ulmessagesList${roomId}`);
+    ulmessagesList.innerHTML = null;
+
+
+    for (var i = 0; i < messagesList.length; i++) {
+        let li = document.createElement("li");
+        let row = document.createElement("div");
+        row.className = "row";
+        row.style.margin = 0;
+        row.style.padding = 0;
+
+        let newmsg = document.createElement("p");
+        newmsg.style.marginBottom = 0;
+        if (messagesList[i].senderId == document.getElementById("hdUserId").value || document.getElementById("hdUserId").value == '') {
+            newmsg.innerHTML = `${messagesList[i].senderName}: ${messagesList[i].message}`;
+        }
+        else {
+            newmsg.innerHTML = `<i role="button" class="bi bi-arrow-right-circle text-primary" onclick="openprivateChat('${messagesList[i].senderId}','${messagesList[i].senderName}')"> </i> ${messagesList[i].senderName}: ${messagesList[i].message}`;
+        }
+
+        let time = document.createElement("p");
+        time.style.fontSize = "0.8rem";
+        time.style.color = "grey";
+        time.innerText = new Date(messagesList[i].time).toISOString().slice(0, 19).replace(/-/g, "/").replace("T", " ");
+
+        row.appendChild(newmsg);
+        row.appendChild(time);
+        li.appendChild(row);
+        ulmessagesList.appendChild(li);
+
+        li.scrollIntoView(false);
+        li.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
+    }
 }
 
 

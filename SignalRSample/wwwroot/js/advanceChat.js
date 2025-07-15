@@ -6,10 +6,16 @@ const connection = new signalR.HubConnectionBuilder()
     .withAutomaticReconnect([0, 1000, 5000, null])
     .build();
 
+
+//start connection
+connection.start().then(function () {
+    PopulateMessages();
+});
+
 var senderId = document.getElementById("hdUserId").value;
 
 //connection.on("ReceiverUserConnected", function (userId, userName) {
-//        AddMessage(`${userName} has a connection open.`);
+//    AddMessage(`${userName} has a connection open.`);
 //})
 
 //connection.on("ReceiverUserDisconnected", function (userId, userName) {
@@ -17,12 +23,10 @@ var senderId = document.getElementById("hdUserId").value;
 //})
 
 connection.on("ReceiveAddRoomMessage", function (maxRoom, roomId, roomName, userId, userName) {
-    //receiveaddnewRoomMessage(maxRoom, roomId, roomName, userId);
     populateChatRooms("Add");
 })
 
 connection.on("ReceiveDelRoomMessage", function (deleted, selected, roomName, userName) {
-    //AddMessage(`${userName} has deleted room ${roomName}.`);
     populateChatRooms("Delete");
 })
 
@@ -33,6 +37,15 @@ connection.on("ReceivePublicMessage", function (roomId, userId, username, messag
 connection.on("ReceivePrivateMessage", function (senderId, senderName, receiveId, message, chatId) {
     receiveprivateMessage(senderId, senderName, receiveId, message, chatId);
 })
+
+
+connection.on("populateRoomMessages", function (roomId, userId, messagesList) {
+    populateRoomMessages(roomId, userId, messagesList);
+})
+
+
+//document.addEventListener('DOMContentLoaded', (event) => {
+//})
 
 //-------------------------------------------
 
@@ -54,6 +67,7 @@ function addnewRoom(maxRoom) {
         cache: false,
         success: function (data) {
             connection.invoke("SendAddRoomMessage", maxRoom, data.id, data.name);
+            /*connection.invoke("populateRoomMessages", data.id);*/
         },
         error: function (xhr, status, error) {
             AddMessage(`Error creating room: ${error}`);
@@ -85,6 +99,12 @@ function deleteRoom(roomId, roomName) {
 
 //-------------------------------------------
 
+function LoadRoomMessages(roomId) {
+    
+    connection.invoke("populateRoomMessages", roomId);
+}
+
+//-------------------------------------------
 
 function readypublicMessage(roomId) {
     if (document.getElementById("inputMessage" + roomId).value === "") {
@@ -111,6 +131,15 @@ function sendpublicMessage(roomId) {
     sendButton.disabled = true;
 }
 
+//-------------------------------------------
+
+function PopulateMessages() {
+    var roomActiveTap = document.querySelector('a.active[id^="room"][id$="-tab"]');
+    var rid = roomActiveTap.id.split("-");
+    
+    connection.send("populateRoomMessages", Number(rid[0].substring(4)));
+}
+
 
 //-------------------------------------------
 
@@ -126,12 +155,8 @@ function sendPrivateMessage() {
     connection.send("SendPrivateMessage", (receiverId), message, receiverName);
 }
 
+
 //-------------------------------------------
-
-document.addEventListener('DOMContentLoaded', (event) => {
-
-})
-
 
 function AddMessage(msg) {
     if (msg == null && msg == '') {
@@ -143,4 +168,3 @@ function AddMessage(msg) {
     ui.appendChild(li);
 }
 
-connection.start();

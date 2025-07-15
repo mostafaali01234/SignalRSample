@@ -89,7 +89,7 @@ public class HomeController : Controller
             UserId = userId
         };
 
-
+        
 
         return View(chatVm);
     }

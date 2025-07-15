@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using SignalRSample.Data;
+using SignalRSample.Models.ViewModels;
 using System.Security.Claims;
 
 namespace SignalRSample.Hubs
@@ -69,8 +70,38 @@ namespace SignalRSample.Hubs
         {
             var userId = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
             var userName = _db.Users.FirstOrDefault(u => u.Id == userId).UserName;
+            var newMessage = new Models.PublicChatMessages
+            {
+                RoomId = roomId,
+                SenderId = userId,
+                Message = message,
+                Time = DateTime.Now
+            };
+            _db.PublicChatMessages.Add(newMessage);
+            _db.SaveChanges();
 
-            await Clients.All.SendAsync("ReceivePublicMessage", roomId, userId, userName, message, roomName);
+            await Clients.All.SendAsync("ReceivePublicMessage", roomId, userId, userName, newMessage, roomName);
+        }
+        public async Task populateRoomMessages(int roomId)
+        {
+            var userId = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userName = userId == null ? "" : _db.Users.FirstOrDefault(u => u.Id == userId).UserName;
+
+           var messagesList = _db.PublicChatMessages
+                .Where(z => z.RoomId == roomId)
+                .OrderBy(z => z.Time)
+                .Select(z => new PublicMessageVm
+                {
+                    RoomId = (int)z.RoomId,
+                    RoomName = z.ChatRoom.Name,
+                    Message = z.Message,
+                    SenderId = z.SenderId,
+                    SenderName = z.Sender.UserName,
+                    Time = z.Time
+                })
+                .ToList();
+
+            await Clients.All.SendAsync("populateRoomMessages", roomId, userId, messagesList);
         }
 
         public async Task SendPrivateMessage(string receiverId, string message, string receiverName)

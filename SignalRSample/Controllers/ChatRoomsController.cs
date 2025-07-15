@@ -71,6 +71,7 @@ namespace SignalRSample.Controllers
                 return NotFound();
             }
 
+            _context.PublicChatMessages.RemoveRange(_context.PublicChatMessages.Where(z => z.RoomId == id).ToList());
             _context.ChatRoom.Remove(chatRoom);
             await _context.SaveChangesAsync();
 
